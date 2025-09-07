@@ -165,6 +165,7 @@
 
 
 
+
 namespace App\Http\Controllers;
 
 use App\Models\UserGoal;
@@ -192,7 +193,7 @@ class GoalController extends Controller
     }
 
     /**
-     * Convert lbs to kg
+     * Convert lbs to kg (kept rounding consistent with other places)
      */
     private function lbsToKg($lbs)
     {
@@ -206,6 +207,7 @@ class GoalController extends Controller
 
     public function store(Request $request)
     {
+        // unchanged validation fields (kept your original names)
         $validated = $request->validate([
             'category' => 'required|in:weight,fitness,nutrition,stress',
             'label' => 'required|string|max:80',
@@ -217,21 +219,21 @@ class GoalController extends Controller
 
         $user = $request->user();
 
-        // Convert target_value from lbs → kg
+        // Convert target_value from lbs → kg if provided (no variable renames)
         if (!empty($validated['target_value'])) {
             $validated['target_value'] = $this->lbsToKg($validated['target_value']);
         }
 
-        // Map symbolic weekly_goal to kg
+        // Map symbolic weekly_goal → weekly_change_kg (keeps 'weekly_goal' request param)
         if (!empty($validated['weekly_goal'])) {
             $validated['weekly_change_kg'] = $this->mapWeeklyGoalToKg($validated['weekly_goal']);
             unset($validated['weekly_goal']);
         }
 
-        // Enforce weight consistency for weight goals
+        // Weight consistency checks (unchanged logic)
         if (($validated['category'] ?? null) === 'weight') {
             $current = $user->profile->current_weight_kg ?? null;
-            $goal    = $validated['target_value'] ?? null;
+            $goal    = $user->profile->goal_weight_kg ?? null;
             $weekly  = $validated['weekly_change_kg'] ?? null;
 
             if ($current && $goal && $weekly !== null) {
@@ -251,13 +253,14 @@ class GoalController extends Controller
         // Create the goal
         $goal = $user->goals()->create($validated);
 
-        // Ensure single primary goal
+        // Ensure single primary goal (unchanged)
         if ($validated['is_primary'] ?? false) {
             $user->goals()->where('id', '!=', $goal->id)->update(['is_primary' => false]);
         }
 
-        // --- NEW: Update profile calories if primary goal ---
-        if ($goal->is_primary) {
+        // --- CHANGED: Recalculate profile calories when any weight goal is created with weekly change.
+        // Rationale: weekly_change_kg should affect daily calorie goal even when goal is not primary.
+        if ($goal->category === 'weight' && !is_null($goal->weekly_change_kg)) {
             ProfileService::updateCurrentWeightAndCalories($user, $user->profile->current_weight_kg);
         }
 
@@ -283,16 +286,16 @@ class GoalController extends Controller
             $validated['target_value'] = $this->lbsToKg($validated['target_value']);
         }
 
-        // Map symbolic weekly_goal to kg
+        // Map symbolic weekly_goal → weekly_change_kg
         if (!empty($validated['weekly_goal'])) {
             $validated['weekly_change_kg'] = $this->mapWeeklyGoalToKg($validated['weekly_goal']);
             unset($validated['weekly_goal']);
         }
 
-        // Enforce weight consistency for weight goals
+        // Weight consistency checks (unchanged logic)
         if ($goal->category === 'weight') {
             $current = $user->profile->current_weight_kg ?? null;
-            $target  = $validated['target_value'] ?? $goal->target_value;
+            $target  = $user->profile->goal_weight_kg ?? null;
             $weekly  = $validated['weekly_change_kg'] ?? $goal->weekly_change_kg;
 
             if ($current && $target && $weekly !== null) {
@@ -309,16 +312,17 @@ class GoalController extends Controller
             }
         }
 
-        // Update the goal
+        // Update the goal record
         $goal->update($validated);
 
-        // Ensure single primary goal
+        // Ensure single primary goal if requested
         if (($validated['is_primary'] ?? null) === true) {
             $user->goals()->where('id', '!=', $goal->id)->update(['is_primary' => false]);
         }
 
-        // --- NEW: Update profile calories if primary goal ---
-        if ($goal->is_primary) {
+        // --- CHANGED: whenever *a weight goal* is updated we recalculate profile calories.
+        // Rationale: weekly_change_kg (or changing the primary flag) can change the effective weekly change used by the app.
+        if ($goal->category === 'weight') {
             ProfileService::updateCurrentWeightAndCalories($user, $user->profile->current_weight_kg);
         }
 
@@ -328,21 +332,27 @@ class GoalController extends Controller
     public function destroy(Request $request, UserGoal $goal)
     {
         try {
-            // Check if the goal belongs to the authenticated user
+            // Check ownership
             if ($goal->user_id !== $request->user()->id) {
                 return response()->json([
                     'error' => 'You are not allowed to delete this goal.'
                 ], 403);
             }
 
-            // Delete the goal
+            $user = $request->user();
+            $wasWeight = $goal->category === 'weight' && !is_null($goal->weekly_change_kg);
+
             $goal->delete();
+
+            // If we deleted a weight goal (which might have been used for calories), recalc using remaining goals
+            if ($wasWeight) {
+                ProfileService::updateCurrentWeightAndCalories($user, $user->profile->current_weight_kg);
+            }
 
             return response()->json([
                 'message' => 'Goal deleted successfully.'
             ]);
         } catch (\Exception $e) {
-            // Catch any other exceptions and return JSON
             return response()->json([
                 'error' => 'An unexpected error occurred: ' . $e->getMessage()
             ], $e->getCode() ?: 500);

@@ -6,9 +6,13 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateProfileRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
-    public function rules(): array {
+    public function rules(): array
+    {
         return [
             'first_name' => 'nullable|string|max:100',
             'last_name'  => 'nullable|string|max:100',
@@ -39,29 +43,29 @@ class UpdateProfileRequest extends FormRequest
     }
 
     public function withValidator($validator)
-{
-    $validator->after(function ($validator) {
-        $current = $this->input('current_weight_kg');
-        $goal = $this->input('goal_weight_kg');
-        $weekly = $this->input('weekly_change_kg');
+    {
+        $validator->after(function ($validator) {
+            $current = $this->input('current_weight_kg');
+            $goal = $this->input('goal_weight_kg');
+            $weekly = $this->input('weekly_change_kg');
 
-        if ($current && $goal && $weekly) {
-            // case: trying to gain while goal < current
-            if ($current > $goal && $weekly > 0) {
-                $validator->errors()->add('weekly_change_kg',
-                    'Invalid goal: you cannot aim to gain weight if your goal is lower than your current weight.'
-                );
+            if ($current && $goal && $weekly) {
+                // case: trying to gain while goal < current
+                if ($current > $goal && $weekly > 0) {
+                    $validator->errors()->add(
+                        'weekly_change_kg',
+                        'Invalid goal: you cannot aim to gain weight if your goal is lower than your current weight.'
+                    );
+                }
+
+                // case: trying to lose while goal > current
+                if ($current < $goal && $weekly < 0) {
+                    $validator->errors()->add(
+                        'weekly_change_kg',
+                        'Invalid goal: you cannot aim to lose weight if your goal is higher than your current weight.'
+                    );
+                }
             }
-
-            // case: trying to lose while goal > current
-            if ($current < $goal && $weekly < 0) {
-                $validator->errors()->add('weekly_change_kg',
-                    'Invalid goal: you cannot aim to lose weight if your goal is higher than your current weight.'
-                );
-            }
-        }
-    });
+        });
+    }
 }
-
-}
-

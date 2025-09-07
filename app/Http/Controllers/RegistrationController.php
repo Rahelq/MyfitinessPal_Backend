@@ -211,12 +211,6 @@
 
 
 
-
-
-
-
-
-
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterStepRequest;
@@ -226,11 +220,13 @@ use App\Models\User;
 use App\Models\UserGoal;
 use App\Models\UserProfile;
 use App\Services\CalorieService;
+use App\Services\ProfileService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+
 
 class RegistrationController extends Controller
 {
@@ -333,7 +329,6 @@ class RegistrationController extends Controller
                 'next_step' => $flow->current_step,
                 'data' => $data,
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to save step: ' . $e->getMessage()
@@ -351,9 +346,16 @@ class RegistrationController extends Controller
             $data = $flow->data ?? [];
 
             $requiredKeys = [
-                'first_name', 'sex', 'dob', 'country', 
-                'height_cm', 'current_weight_kg', 'goal_weight_kg',
-                'activity_level', 'weekly_change_kg', 'goals_selected'
+                'first_name',
+                'sex',
+                'dob',
+                'country',
+                'height_cm',
+                'current_weight_kg',
+                'goal_weight_kg',
+                'activity_level',
+                'weekly_change_kg',
+                'goals_selected'
             ];
 
             foreach ($requiredKeys as $key) {
@@ -412,6 +414,9 @@ class RegistrationController extends Controller
                     'modify_my_diet'  => 'nutrition',
                     'manage_stress'   => 'stress',
                 ];
+                
+
+
 
                 foreach ($data['goals_selected'] as $idx => $label) {
                     UserGoal::create([
@@ -426,19 +431,38 @@ class RegistrationController extends Controller
                     ]);
                 }
 
+
+                if (!collect($data['goals_selected'])->contains(fn($g) => in_array($g, ['lose_weight', 'gain_weight', 'maintain_weight']))) {
+                    UserGoal::create([
+                        'user_id'         => $user->id,
+                        'category'        => 'weight',
+                        'label'           => $data['weekly_change_kg'] == 0 ? 'maintain_weight'
+                            : ($data['weekly_change_kg'] > 0 ? 'gain_weight' : 'lose_weight'),
+                        'reasons'         => [],
+                        'weekly_change_kg' => $data['weekly_change_kg'],
+                        'is_primary'      => true, // make this the effective primary
+                        'active'          => true,
+                    ]);
+                }
+
+                // (uses a ProfileService helper — you can implement it to recalc from latest goal)
+                ProfileService::updateCurrentWeightAndCalories(
+                    $user,
+                    $profile->current_weight_kg
+                );
+
                 $token = $user->createToken('auth')->plainTextToken;
                 $flow->delete();
 
                 return response()->json([
                     'message' => 'Registration completed successfully.',
-                    'user' => $user->only(['id','email','username','first_name','last_name']),
+                    'user' => $user->only(['id', 'email', 'username', 'first_name', 'last_name']),
                     'profile' => $profile,
                     'goals' => $user->goals()->get(),
                     'daily_calorie_goal' => $profile->daily_calorie_goal,
                     'token' => $token,
                 ], 201);
             });
-
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Registration failed: ' . $e->getMessage()

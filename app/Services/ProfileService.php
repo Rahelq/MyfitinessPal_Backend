@@ -10,7 +10,10 @@ class ProfileService
     public static function updateCurrentWeightAndCalories(User $user, float $newWeightKg): void
     {
         $profile = $user->profile;
-
+        if (! $profile) {
+            // nothing to update
+            return;
+        }
         $profile->current_weight_kg = $newWeightKg;
 
         // Pull user data for calorie calculation
@@ -19,10 +22,17 @@ class ProfileService
         $age_years      = Carbon::parse($profile->dob)->age ?? 25;
         $activity_level = $profile->activity_level ?? 'sedentary';
 
-        // Get active weekly change from user’s *primary goal* (if exists)
-        $weekly_change_kg = optional(
-            $user->goals()->where('is_primary', true)->first()
-        )->weekly_change_kg ?? 0.0;
+
+        $weightGoal = $user->goals()
+            ->where('category', 'weight')
+            ->whereNotNull('weekly_change_kg')
+            ->orderByDesc('is_primary')     // prefer primary weight goal if it has a weekly change
+            ->orderByDesc('updated_at')     // otherwise prefer most recently updated
+            ->first();
+
+
+        $weekly_change_kg = $weightGoal->weekly_change_kg ?? 0.0;
+
 
         // Use CalorieService
         $calorieService = new CalorieService();

@@ -97,11 +97,33 @@ class CheckInController extends Controller
         // Update profile + calories
         ProfileService::updateCurrentWeightAndCalories($user, $weightKg);
 
+
+
+        $goalWeight = $user->profile->goal_weight_kg ?? null;
+        $weeklyChange = $user->goals()
+            ->where('category', 'weight')
+            ->value('weekly_change_kg');
+
+        $goalReached = false;
+        if ($goalWeight !== null && $weeklyChange !== null) {
+            if ($weeklyChange < 0 && $weightKg <= $goalWeight) {
+                // Losing weight and reached or passed target
+                $goalReached = true;
+            }
+            if ($weeklyChange > 0 && $weightKg >= $goalWeight) {
+                // Gaining weight and reached or passed target
+                $goalReached = true;
+            }
+            if ($weeklyChange == 0 && $weightKg == $goalWeight) {
+                // Maintain weight and exactly at goal
+                $goalReached = true;
+            }
+        }
+
         return response()->json([
-            'message'  => 'Check-in recorded',
-            'check_in' => $checkIn,
+            'message'      => 'Check-in recorded',
+            'check_in'     => $checkIn,
+            'goal_reached' => $goalReached,
         ], 201);
     }
 }
-
-
