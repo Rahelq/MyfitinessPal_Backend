@@ -2,50 +2,62 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\CheckIn;
+use App\Models\UserGoal;
+use App\Models\UserProfile;
+use App\Models\ExerciseDatabase;
+use Laravel\Sanctum\HasApiTokens;
+use App\Models\QuickExerciseEntries;
+use App\Models\StrengthExerciseEntries;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-
-
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, Notifiable, HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
+        'username',
         'email',
         'password',
-        'is_admin',  
+        'role',
+        'is_active',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function profile()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function goals()
+    {
+        return $this->hasMany(UserGoal::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+    public function checkIns()
+    {
+        return $this->hasMany(CheckIn::class);
+    }
+    public function exercises(){
+        return $this->hasMany(ExerciseDatabase::class, 'created_by_user_id', 'id');
+    }
+    public function cardio(){
+        return $this->hasMany(CardioExerciseEntries::class);
+    }
+    public function strength(){
+        return $this->hasMany(StrengthExerciseEntries::class);
+    }
+    public function quick(){
+        return $this->hasMany(QuickExerciseEntries::class);
+
     }
 }
