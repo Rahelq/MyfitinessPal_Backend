@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;  
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\CheckInController;
@@ -10,7 +11,10 @@ use App\Http\Controllers\QuickExercisesController;
 use App\Http\Controllers\CardioExercisesController;
 use App\Http\Controllers\ExerciseDatabaseController;
 use App\Http\Controllers\StrengthExercisesController;
-
+use App\Http\Controllers\Api\FoodDiaryController;
+use App\Http\Controllers\Api\QuickFoodEntryController;
+use App\Http\Controllers\Api\WaterEntryController;
+// Authentication routes
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::middleware('auth:sanctum')->group(function () {
@@ -65,4 +69,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/quick-entries/{id}', [QuickExercisesController::class, 'show']);
     Route::put('/quick-entries/{id}', [QuickExercisesController::class, 'update']);
     Route::delete('/quick-entries/{id}', [QuickExercisesController::class, 'destroy']);
+  // Food Diary routes
+Route::get('/foods', [FoodDiaryController::class, 'searchFoods']);       // search food items
+Route::get('/diary', [FoodDiaryController::class, 'index']);             // get user diary
+Route::post('/diary', [FoodDiaryController::class, 'store']);            // add food to diary
+Route::delete('/diary/{id}', [FoodDiaryController::class, 'destroy']);   // delete food entry
+Route::get('/daily-summary', [FoodDiaryController::class, 'dailySummary']); // nutrition summary(food + quick foods)
+// Quick Food Routes
+Route::get('/quick-foods', [QuickFoodEntryController::class, 'index']);     // list quick foods
+Route::post('/quick-foods', [QuickFoodEntryController::class, 'store']);    // add quick entry
+Route::delete('/quick-foods/{id}', [QuickFoodEntryController::class, 'destroy']); // delete quick entry
+// Water entry routes
+Route::get('/water', [WaterEntryController::class, 'index']);
+Route::post('/water', [WaterEntryController::class, 'store']);
+Route::delete('/water/{id}', [WaterEntryController::class, 'destroy']);
 });
+
