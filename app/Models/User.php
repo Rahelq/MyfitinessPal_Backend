@@ -10,11 +10,12 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\QuickExerciseEntries;
 use App\Models\StrengthExerciseEntries;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use HasApiTokens, Notifiable, HasFactory;
 
     protected $fillable = [
         'first_name',
@@ -57,5 +58,6 @@ class User extends Authenticatable
     }
     public function quick(){
         return $this->hasMany(QuickExerciseEntries::class);
+
     }
 }
