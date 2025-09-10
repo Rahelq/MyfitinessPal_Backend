@@ -23,7 +23,6 @@ class AuthController extends Controller
         if(Auth::attempt(array_merge($credentials, ['role'=>'admin']))) {
             $user = Auth::user();
             
-            // Optional: check if account is active
             if($user->status !== 'active'){
                 return response()->json(['message'=>'Account disabled'],403);
             }
@@ -40,7 +39,6 @@ class AuthController extends Controller
         return response()->json(['message'=>'Invalid credentials or not an admin'],401);
     }
 
-    // Admin logout
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

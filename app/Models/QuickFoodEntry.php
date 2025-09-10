@@ -15,4 +15,8 @@ class QuickFoodEntry extends Model
     protected $fillable = [
         'user_id','food_name','meal_type','calories','entry_date','notes','status'
     ];
+
+    public function user() { // relationship to User model
+        return $this->belongsTo(User::class);
+    }
 }

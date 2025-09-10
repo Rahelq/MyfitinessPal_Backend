@@ -31,4 +31,8 @@ class FoodDiaryEntry extends Model
     {
         return $this->belongsTo(FoodItem::class, 'food_id', 'food_id');
     }
+
+    public function user() { // relationship to User model
+        return $this->belongsTo(User::class);
+    }
 }

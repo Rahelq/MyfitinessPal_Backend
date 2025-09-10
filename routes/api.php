@@ -15,15 +15,18 @@ use App\Http\Controllers\StrengthExercisesController;
 use App\Http\Controllers\Api\FoodDiaryController;
 use App\Http\Controllers\Api\QuickFoodEntryController;
 use App\Http\Controllers\Api\WaterEntryController;
+use App\Http\Controllers\ReportsController as UserReportsController;
 
 // Admin UserController
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\FoodItemController;
-use App\Http\Controllers\Admin\ExerciseController;
-use App\Http\Controllers\Admin\ReportsController;
-use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
-
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminFoodCategoryController;
+use App\Http\Controllers\Admin\AdminFoodItemController;
+use App\Http\Controllers\Admin\AdminExerciseCategoryController;
+use App\Http\Controllers\Admin\AdminExerciseController;
+use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminSettingsController;
+use App\Http\Controllers\Admin\AdminNotificationController;
 
 
 // Authentication routes
@@ -81,151 +84,101 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/quick-entries/{id}', [QuickExercisesController::class, 'show']);
     Route::put('/quick-entries/{id}', [QuickExercisesController::class, 'update']);
     Route::delete('/quick-entries/{id}', [QuickExercisesController::class, 'destroy']);
-  // Food Diary routes
-Route::get('/foods', [FoodDiaryController::class, 'searchFoods']);       // search food items
-Route::get('/diary', [FoodDiaryController::class, 'index']);             // get user diary
-Route::post('/diary', [FoodDiaryController::class, 'store']);            // add food to diary
-Route::delete('/diary/{id}', [FoodDiaryController::class, 'destroy']);   // delete food entry
-Route::get('/daily-summary', [FoodDiaryController::class, 'dailySummary']); // nutrition summary(food + quick foods)
-// Quick Food Routes
-Route::get('/quick-foods', [QuickFoodEntryController::class, 'index']);     // list quick foods
-Route::post('/quick-foods', [QuickFoodEntryController::class, 'store']);    // add quick entry
-Route::delete('/quick-foods/{id}', [QuickFoodEntryController::class, 'destroy']); // delete quick entry
-// Water entry routes
-Route::get('/water', [WaterEntryController::class, 'index']);
-Route::post('/water', [WaterEntryController::class, 'store']);
-Route::delete('/water/{id}', [WaterEntryController::class, 'destroy']);
+    // Food Diary routes
+    Route::get('/foods', [FoodDiaryController::class, 'searchFoods']);       // search food items
+    Route::get('/diary', [FoodDiaryController::class, 'index']);             // get user diary
+    Route::post('/diary', [FoodDiaryController::class, 'store']);            // add food to diary
+    Route::delete('/diary/{id}', [FoodDiaryController::class, 'destroy']);   // delete food entry
+    Route::get('/daily-summary', [FoodDiaryController::class, 'dailySummary']); // nutrition summary(food + quick foods)
+    // Quick Food Routes
+    Route::get('/quick-foods', [QuickFoodEntryController::class, 'index']);     // list quick foods
+    Route::post('/quick-foods', [QuickFoodEntryController::class, 'store']);    // add quick entry
+    Route::delete('/quick-foods/{id}', [QuickFoodEntryController::class, 'destroy']); // delete quick entry
+    // Water entry routes
+    Route::get('/water', [WaterEntryController::class, 'index']);
+    Route::post('/water', [WaterEntryController::class, 'store']);
+    Route::delete('/water/{id}', [WaterEntryController::class, 'destroy']);
+
+
+        // Daily Report
+    Route::get('/report/daily/{userId}', [UserReportsController::class, 'dailyReport'])
+        ->name('report.daily');
+
+    // Weekly / Monthly Summary
+    Route::get('/report/summary/{userId}', [UserReportsController::class, 'summaryReport'])
+        ->name('report.summary');
+
+    // Weight Trend
+    Route::get('/report/weight-trend/{userId}', [UserReportsController::class, 'weightTrend'])
+        ->name('report.weightTrend');
+
+    // Compare Intake / Exercise with Goals
+    Route::get('/report/goals-comparison/{userId}', [UserReportsController::class, 'goalsComparison'])
+        ->name('report.goalsComparison');
 });
 
 
-
-// Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function () {
-//     Route::get('/users', [UserController::class, 'index']);
-//     Route::get('/users/{id}', [UserController::class, 'show']);
-//     Route::post('/users', [UserController::class, 'store']);
-//     Route::put('/users/{id}', [UserController::class, 'update']);
-//     Route::delete('/users/{id}', [UserController::class, 'destroy']);
-//     Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
-// });
-
-   
-
-Route::prefix('admin')->group(function () {
-    Route::post('/login', [AdminAuthController::class, 'login']);
-});
-
-
-Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index']);
-
-    // Auth
-    Route::post('/logout', [AdminAuthController::class, 'logout']);
-
-    // User Management
-    Route::get('/users', [UserController::class, 'index']);
-    Route::get('/users/{id}', [UserController::class, 'show']);
-    Route::post('/users', [UserController::class, 'store']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::patch('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
-    Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
-    Route::post('/users/{id}/deactivate', [UserController::class, 'deactivate']);
-    Route::post('/users/{id}/activate', [UserController::class, 'activate']);
-    Route::get('/users/{id}/logins', [UserController::class, 'loginActivity']);
-
-    // Food Management
-    Route::get('/foods', [FoodItemController::class, 'index']);
-    Route::post('/foods', [FoodItemController::class, 'store']);
-    Route::get('/foods/{id}', [FoodItemController::class, 'show']);
-    Route::put('/foods/{id}', [FoodItemController::class, 'update']);
-    Route::delete('/foods/{id}', [FoodItemController::class, 'destroy']);
-    Route::post('/foods/{id}/approve', [FoodItemController::class, 'approve']);
-
-    // Exercise Management
-    Route::get('/exercises', [ExerciseController::class, 'index']);
-    Route::post('/exercises', [ExerciseController::class, 'store']);
-    Route::get('/exercises/{id}', [ExerciseController::class, 'show']);
-    Route::put('/exercises/{id}', [ExerciseController::class, 'update']);
-    Route::patch('/exercises/{id}', [ExerciseController::class, 'update']);
-    Route::delete('/exercises/{id}', [ExerciseController::class, 'destroy']);
-    Route::post('/exercises/{id}/approve', [ExerciseController::class, 'approve']);
-
-    // Reports & Analytics
-    Route::get('/reports/usage', [ReportsController::class, 'systemUsage']);
-    Route::get('/reports/weight-trends', [ReportsController::class, 'weightTrends']);
-    Route::get('/reports/food-exercise', [ReportsController::class, 'foodExerciseEntries']);
-
-        // Reports
-    Route::prefix('reports')->group(function () {
-        Route::get('/active-users', [ReportsController::class, 'activeUsers']);
-        Route::get('/avg-calories', [ReportsController::class, 'avgCalories']);
-        Route::get('/common-exercises', [ReportsController::class, 'commonExercises']);
-        Route::get('/user-foods', [ReportsController::class, 'userFoods']);
-        Route::get('/user-exercises', [ReportsController::class, 'userExercises']);
-        Route::get('/incomplete-entries', [ReportsController::class, 'incompleteEntries']);
-    });
-
-    
-});
-
-
-
-
-
-
-
-// Public admin routes
-// Route::prefix('admin')->group(function () {
-//     Route::post('/login', [AdminAuthController::class, 'login']);
-// });
-
-// Route::middleware(['auth:sanctum', 'admin'])->get('/admin/dashboard', [AdminAuthController::class, 'index']);
-
-// Protected admin routes
-// Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function () {
-
-    // Auth
-    // Route::post('/logout', [AuthController::class, 'logout']);
-
+    // Admin routes
+Route::middleware(['auth:sanctum','admin'])->prefix('admin')->group(function() {
+    // Dashboard
+    Route::get('admin/dashboard', [AdminDashboardController::class, 'index']);
     // Users
-    // Route::get('/users', [UserController::class, 'index']);
-    // Route::get('/users/{id}', [UserController::class, 'show']);
-    // Route::post('/users', [UserController::class, 'store']);
-    // Route::put('/users/{id}', [UserController::class, 'update']);
-    // Route::patch('/users/{id}', [UserController::class, 'update']);
-    // Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    Route::get('users', [AdminUserController::class, 'index']);
+    Route::post('users', [AdminUserController::class, 'store']);
+    Route::get('users/{id}', [AdminUserController::class, 'show']);
+    Route::put('users/{id}', [AdminUserController::class, 'update']);
+    Route::delete('users/{id}', [AdminUserController::class, 'destroy']);
+    Route::get('users/{id}/goals', [AdminUserController::class, 'goals']);
+    Route::get('users/{id}/checkins', [AdminUserController::class, 'checkins']);
+    Route::patch('users/{userId}/toggle-status', [AdminUserController::class, 'toggleStatus']);
 
-    // Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
-    // Route::post('/users/{id}/deactivate', [UserController::class, 'deactivate']);
-    // Route::post('/users/{id}/activate', [UserController::class, 'activate']);
-    // Route::get('/users/{id}/logins', [UserController::class, 'loginActivity']);
+    // Food Categories
+    Route::get('admin/food-categories', [AdminFoodCategoryController::class, 'index']);
+    Route::post('admin/food-categories', [AdminFoodCategoryController::class, 'store']);
+    Route::put('admin/food-categories/{id}', [AdminFoodCategoryController::class, 'update']);
+    Route::delete('admin/food-categories/{id}', [AdminFoodCategoryController::class, 'destroy']);
 
     // Food Items
-    // Route::get('/foods', [FoodItemController::class, 'index']);
-    // Route::get('/foods/{id}', [FoodItemController::class, 'show']);
-    // Route::post('/foods', [FoodItemController::class, 'store']);
-    // Route::put('/foods/{id}', [FoodItemController::class, 'update']);
-    // Route::patch('/foods/{id}', [FoodItemController::class, 'update']);
-    // Route::delete('/foods/{id}', [FoodItemController::class, 'destroy']);
-    // Route::post('/foods/{id}/approve', [FoodItemController::class, 'approve']);
+    Route::get('admin/food-items', [AdminFoodItemController::class, 'index']);
+    Route::get('admin/food-items/{id}', [AdminFoodItemController::class, 'show']);
+    Route::post('admin/food-items', [AdminFoodItemController::class, 'store']);
+    Route::put('admin/food-items/{id}', [AdminFoodItemController::class, 'update']);
+    Route::delete('admin/food-items/{id}', [AdminFoodItemController::class, 'destroy']);
+    Route::get('admin/food-items/pending', [AdminFoodItemController::class, 'pending']);
+    Route::put('admin/food-items/{id}/approve', [AdminFoodItemController::class, 'approve']);
+    Route::put('admin/food-items/{id}/reject', [AdminFoodItemController::class, 'reject']);
+
+    // Exercise Categories
+    Route::get('admin/exercise-categories', [AdminExerciseCategoryController::class, 'index']);
+    Route::post('admin/exercise-categories', [AdminExerciseCategoryController::class, 'store']);
+    Route::put('admin/exercise-categories/{id}', [AdminExerciseCategoryController::class, 'update']);
+    Route::delete('admin/exercise-categories/{id}', [AdminExerciseCategoryController::class, 'destroy']);
 
     // Exercises
-    // Route::get('/exercises', [ExerciseController::class, 'index']);
-    // Route::get('/exercises/{id}', [ExerciseController::class, 'show']);
-    // Route::post('/exercises', [ExerciseController::class, 'store']);
-    // Route::put('/exercises/{id}', [ExerciseController::class, 'update']);
-    // Route::patch('/exercises/{id}', [ExerciseController::class, 'update']);
-    // Route::delete('/exercises/{id}', [ExerciseController::class, 'destroy']);
-    // Route::post('/exercises/{id}/approve', [ExerciseController::class, 'approve']);
+    Route::get('admin/exercises', [AdminExerciseController::class, 'index']);
+    Route::get('admin/exercises/{id}', [AdminExerciseController::class, 'show']);
+    Route::post('admin/exercises', [AdminExerciseController::class, 'store']);
+    Route::put('admin/exercises/{id}', [AdminExerciseController::class, 'update']);
+    Route::delete('admin/exercises/{id}', [AdminExerciseController::class, 'destroy']);
+    Route::get('admin/exercises/pending', [AdminExerciseController::class, 'pending']);
+    Route::put('admin/exercises/{id}/approve', [AdminExerciseController::class, 'approve']);
+    Route::put('admin/exercises/{id}/reject', [AdminExerciseController::class, 'reject']);
 
     // Reports
-    // Route::prefix('reports')->group(function () {
-    //     Route::get('/active-users', [ReportsController::class, 'activeUsers']);
-    //     Route::get('/avg-calories', [ReportsController::class, 'averageCalories']);
-    //     Route::get('/common-exercises', [ReportsController::class, 'commonExercises']);
-    //     Route::get('/user-foods', [ReportsController::class, 'userFoods']);
-    //     Route::get('/user-exercises', [ReportsController::class, 'userExercises']);
-    //     Route::get('/incomplete-entries', [ReportsController::class, 'incompleteEntries']);
-    // });
-// });
+    Route::get('admin/reports/users', [AdminReportController::class, 'users']);
+    Route::get('admin/reports/foods', [AdminReportController::class, 'foods']);
+    Route::get('admin/reports/exercises', [AdminReportController::class, 'exercises']);
+    Route::get('admin/reports/system-usage', [AdminReportController::class, 'systemUsage']);
+    Route::get('admin/reports/user-progress/{user_id}', [AdminReportController::class, 'userProgress']);
 
+    // Settings
+    Route::get('admin/settings', [AdminSettingsController::class, 'index']);
+    Route::put('admin/settings/{key}', [AdminSettingsController::class, 'update']);
+
+
+    // Notifications
+    Route::get('admin/notifications', [AdminNotificationController::class, 'index']);
+    Route::post('admin/notifications', [AdminNotificationController::class, 'store']);
+    Route::put('admin/notifications/{id}/mark-read', [AdminNotificationController::class, 'markRead']);
+
+});

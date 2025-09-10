@@ -2616,7 +2616,7 @@
         {
             "name": "phpoption/phpoption",
        "reference": "e3fac8b24f56113f7cb96af14958c0dd16330f54",
-=======
+
             "version": "1.9.4",
             "source": {
                 "type": "git",

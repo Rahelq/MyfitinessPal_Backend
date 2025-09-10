@@ -131,7 +131,7 @@ class ExerciseDatabaseController extends Controller
                 ->where('created_by_user_id', auth()->user()->id)
                 ->firstOrFail();
     
-            $exercise->update(...$validated());
+            $exercise->update($validated());  // initially it was "...$validated()"
     
             return response()->json([
                 'message' => 'Exercise updated successfully',
