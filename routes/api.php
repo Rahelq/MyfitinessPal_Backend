@@ -56,7 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/goals/{goal}', [GoalController::class, 'update']);
     Route::delete('/goals/{goal}', [GoalController::class, 'destroy']);
     // check-ins route
-    Route::get('/check-ins', [CheckInController::class, 'index']);
+    Route::get('/check-ins', [CheckInController::class, 'index']);     
     Route::post('/check-ins', [CheckInController::class, 'store']);
     // exercise database routes
     Route::get('/exercises',[ExerciseDatabaseController::class, 'index']);
@@ -99,21 +99,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/water', [WaterEntryController::class, 'store']);
     Route::delete('/water/{id}', [WaterEntryController::class, 'destroy']);
 
-
         // Daily Report
-    Route::get('/report/daily/{userId}', [UserReportsController::class, 'dailyReport'])
+    Route::get('/report/daily', [UserReportsController::class, 'dailyReport'])
         ->name('report.daily');
-
     // Weekly / Monthly Summary
-    Route::get('/report/summary/{userId}', [UserReportsController::class, 'summaryReport'])
+    Route::get('/report/summary', [UserReportsController::class, 'summaryReport'])
         ->name('report.summary');
-
     // Weight Trend
-    Route::get('/report/weight-trend/{userId}', [UserReportsController::class, 'weightTrend'])
+    Route::get('/report/weight-trend', [UserReportsController::class, 'weightTrend'])
         ->name('report.weightTrend');
-
     // Compare Intake / Exercise with Goals
-    Route::get('/report/goals-comparison/{userId}', [UserReportsController::class, 'goalsComparison'])
+    Route::get('/report/goals-comparison', [UserReportsController::class, 'goalsComparison'])
         ->name('report.goalsComparison');
 });
 

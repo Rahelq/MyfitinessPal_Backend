@@ -261,8 +261,8 @@ class RegistrationController extends Controller
             switch ($step) {
                 case 1:
                     $data['first_name'] = $request->string('first_name');
+                    $data['last_name'] = $request->string('first_name');
                     break;
-
                 case 2:
                     $data['goals_selected'] = $request->input('goals', []);
                     break;
@@ -347,6 +347,7 @@ class RegistrationController extends Controller
 
             $requiredKeys = [
                 'first_name',
+                'last_name',
                 'sex',
                 'dob',
                 'country',
