@@ -23,7 +23,7 @@ class AdminReportController extends Controller
         $this->middleware('admin');
     }
 
-    // 1️⃣ User engagement & stats
+    // User engagement & stats
     public function users(Request $request)
     {
         try {
@@ -72,7 +72,7 @@ class AdminReportController extends Controller
         }
     }
 
-    // 2️⃣ Most popular exercises
+    // Most popular exercises
     public function exercises(Request $request)
     {
         try {
@@ -128,7 +128,7 @@ class AdminReportController extends Controller
         }
     }
 
-    // 3️⃣ Most popular food
+    //  Most popular food
     public function food(Request $request)
     {
         try {
@@ -157,7 +157,7 @@ class AdminReportController extends Controller
         }
     }
 
-    // 4️⃣ System usage (login attempts / active sessions)
+    // System usage (login attempts / active sessions)
     public function systemUsage(Request $request)
     {
         try {

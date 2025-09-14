@@ -178,7 +178,7 @@ Route::middleware(['auth:sanctum','admin'])->prefix('admin')->group(function() {
 
     // Reports
     Route::get('/reports/users', [AdminReportController::class, 'users']);
-    Route::get('/reports/foods', [AdminReportController::class, 'foods']);
+    Route::get('/reports/foods', [AdminReportController::class, 'food']);
     Route::get('/reports/exercises', [AdminReportController::class, 'exercises']);
     Route::get('/reports/system-usage', [AdminReportController::class, 'systemUsage']);
     Route::get('/reports/user-progress/{user_id}', [AdminReportController::class, 'userProgress']);
