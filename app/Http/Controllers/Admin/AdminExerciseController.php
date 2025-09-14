@@ -11,16 +11,16 @@ use Illuminate\Validation\Rule;
 
 class AdminExerciseController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('admin');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('admin');
+    // }
 
     // List all exercises with pagination and optional filters
     public function index(Request $request)
     {
         try {
-            $query = ExerciseDatabase::with('category', 'user');
+            $query = ExerciseDatabase::with('catagory', 'user');
             
             // Add search filter
             if ($request->has('search')) {
@@ -62,7 +62,7 @@ class AdminExerciseController extends Controller
     public function show($id)
     {
         try {
-            $exercise = ExerciseDatabase::with('category', 'user', 'cardio', 'strength')
+            $exercise = ExerciseDatabase::with('catagory', 'user', 'cardio', 'strength')
                                       ->findOrFail($id);
             return response()->json($exercise);
         } catch (\Exception $e) {
@@ -83,7 +83,7 @@ class AdminExerciseController extends Controller
                     'max:255',
                     Rule::unique('exercise_databases', 'exercise_name')
                 ],
-                'catagory_id' => 'required|exists:exercise_catagories,catagory_id',
+                'catagory_id' => 'required|exists:exercise_caragories,catagory_id',
                 'exercise_type' => 'required|in:cardiovascular,strength,flexibility,sports,other',
                 'calories_per_minute' => 'required|numeric|min:0',
                 'description' => 'nullable|string',
@@ -133,7 +133,7 @@ class AdminExerciseController extends Controller
                     'max:255',
                     Rule::unique('exercise_databases', 'exercise_name')->ignore($exercise->exercise_id, 'exercise_id')
                 ],
-                'catagory_id' => 'required|exists:exercise_catagories,catagory_id',
+                'catagory_id' => 'required|exists:exercise_caragories,catagory_id',
                 'exercise_type' => 'required|in:cardiovascular,strength,flexibility,sports,other',
                 'calories_per_minute' => 'required|numeric|min:0',
                 'description' => 'nullable|string',
@@ -199,6 +199,7 @@ class AdminExerciseController extends Controller
     {
         try {
             $pendingExercises = ExerciseDatabase::with('user')
+                ->where('is_rejected', false)
                 ->where('is_verified', false)
                 ->orWhere('is_public', false)
                 ->orderBy('created_at', 'desc')
@@ -233,14 +234,25 @@ class AdminExerciseController extends Controller
         }
     }
 
-    // Reject exercise
-    public function reject($id)
+        // Reject exercise
+    public function reject(Request $request, $id)
     {
         try {
+            $validator = Validator::make($request->all(), [
+                'rejection_reason' => 'nullable|string|max:500'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
             $exercise = ExerciseDatabase::findOrFail($id);
             $exercise->update([
                 'is_verified' => false,
-                'is_public' => false
+                'is_public' => false,
+                'is_rejected' => true,
+                'rejection_reason' => $request->rejection_reason,
+                'rejected_at' => now()
             ]);
 
             return response()->json([
@@ -248,8 +260,45 @@ class AdminExerciseController extends Controller
                 'exercise' => $exercise
             ]);
         } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to reject exercise'], 500);
+        }
+    }
+
+        //view rejected exercises
+    public function rejected()
+    {
+        try {
+            $rejectedExercises = ExerciseDatabase::with('user')
+                ->where('is_rejected', true)
+                ->orderBy('rejected_at', 'desc')
+                ->get();
+                
+            return response()->json($rejectedExercises);
+        } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Failed to reject exercise: ' . $e->getMessage()
+                'error' => 'Failed to fetch rejected exercises: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    //  restore rejected exercises
+    public function restore($id)
+    {
+        try {
+            $exercise = ExerciseDatabase::findOrFail($id);
+            $exercise->update([
+                'is_rejected' => false,
+                'rejection_reason' => null,
+                'rejected_at' => null
+            ]);
+
+            return response()->json([
+                'message' => 'Exercise restored successfully',
+                'exercise' => $exercise
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to restore exercise: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -31,7 +31,7 @@ class AdminExerciseCategoryController extends Controller
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('exercise_catagories', 'catagory_name')
+                    Rule::unique('exercise_caragories', 'catagory_name')
                 ],
                 'catagory_type' => 'required|in:cardiovascular,strength,flexibility,sports,other',
                 'description' => 'nullable|string',
@@ -71,7 +71,7 @@ class AdminExerciseCategoryController extends Controller
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('exercise_catagories', 'catagory_name')->ignore($category->catagory_id, 'catagory_id')
+                    Rule::unique('exercise_caragories', 'catagory_name')->ignore($category->catagory_id, 'catagory_id')
                 ],
                 'catagory_type' => 'required|in:cardiovascular,strength,flexibility,sports,other',
                 'description' => 'nullable|string',

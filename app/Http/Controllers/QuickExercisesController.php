@@ -19,7 +19,7 @@ class QuickExercisesController extends Controller
         }
     }
 
- public function store(Request $request)
+public function store(Request $request)
     {
         try {
             $validated = $request->validate([
@@ -45,7 +45,7 @@ class QuickExercisesController extends Controller
         }
     }
 
- public function show($id)
+public function show($id)
     {
         try {
             $entry = QuickExerciseEntries::where('quick_entry_id', $id)

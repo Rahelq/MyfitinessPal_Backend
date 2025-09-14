@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\AdminExerciseController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminNotificationController;
+use App\Http\Controllers\Admin\AdminQuickFoodController;
 
 
 // Authentication routes
@@ -143,16 +144,20 @@ Route::middleware(['auth:sanctum','admin'])->prefix('admin')->group(function() {
     Route::put('/food-categories/{id}', [AdminFoodCategoryController::class, 'update']);
     Route::delete('/food-categories/{id}', [AdminFoodCategoryController::class, 'destroy']);
 
+    // Quick Foods
+    Route::get('/quick-foods', [AdminQuickFoodController::class, 'index']);
+    Route::get('/quick-foods/pending', [AdminQuickFoodController::class, 'pending']);
+    Route::get('/quick-foods/{id}', [AdminQuickFoodController::class, 'show']);
+    Route::post('/quick-foods/{id}/approve', [AdminQuickFoodController::class, 'approve']);
+    Route::post('/quick-foods/{id}/reject', [AdminQuickFoodController::class, 'reject']);
     // Food Items
     Route::get('/food-items', [AdminFoodItemController::class, 'index']);
+    Route::get('/food-items/pending', [AdminFoodItemController::class, 'pending']);
     Route::get('/food-items/{id}', [AdminFoodItemController::class, 'show']);
     Route::post('/food-items', [AdminFoodItemController::class, 'store']);
     Route::put('/food-items/{id}', [AdminFoodItemController::class, 'update']);
     Route::delete('/food-items/{id}', [AdminFoodItemController::class, 'destroy']);
-    Route::get('/food-items/pending', [AdminFoodItemController::class, 'pending']);
-    Route::put('/food-items/{id}/approve', [AdminFoodItemController::class, 'approve']);
-    Route::put('/food-items/{id}/reject', [AdminFoodItemController::class, 'reject']);
-
+    
     // Exercise Categories
     Route::get('/exercise-categories', [AdminExerciseCategoryController::class, 'index']);
     Route::post('/exercise-categories', [AdminExerciseCategoryController::class, 'store']);
@@ -161,13 +166,15 @@ Route::middleware(['auth:sanctum','admin'])->prefix('admin')->group(function() {
 
     // Exercises
     Route::get('/exercises', [AdminExerciseController::class, 'index']);
+    Route::get('/exercises/pending', [AdminExerciseController::class, 'pending']);
+    Route::get('/exercises/rejected', [AdminExerciseController::class, 'rejected']);
     Route::get('/exercises/{id}', [AdminExerciseController::class, 'show']);
     Route::post('/exercises', [AdminExerciseController::class, 'store']);
     Route::put('/exercises/{id}', [AdminExerciseController::class, 'update']);
     Route::delete('/exercises/{id}', [AdminExerciseController::class, 'destroy']);
-    Route::get('/exercises/pending', [AdminExerciseController::class, 'pending']);
     Route::put('/exercises/{id}/approve', [AdminExerciseController::class, 'approve']);
     Route::put('/exercises/{id}/reject', [AdminExerciseController::class, 'reject']);
+    Route::post('/exercises/{id}/restore', [AdminExerciseController::class, 'restore']);
 
     // Reports
     Route::get('/reports/users', [AdminReportController::class, 'users']);

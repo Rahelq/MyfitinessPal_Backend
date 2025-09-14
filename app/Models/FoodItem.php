@@ -18,8 +18,7 @@ class FoodItem extends Model
         'food_name','brand','category_id',
         'serving_size','serving_unit',
         'calories_per_serving','protein_per_serving','carbs_per_serving','fat_per_serving',
-        'fiber_per_serving','sugar_per_serving','sodium_per_serving',
-        'is_verified','is_public','created_by_user_id'
+        'fiber_per_serving','sugar_per_serving','sodium_per_serving','created_by_user_id'
     ];
 
     public function category()
