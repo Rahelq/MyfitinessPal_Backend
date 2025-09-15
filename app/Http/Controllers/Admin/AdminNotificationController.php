@@ -3,7 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Notification;
+use App\Models\UserNotification;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 
@@ -18,7 +18,7 @@ class AdminNotificationController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Notification::with('user')->orderByDesc('created_at');
+            $query = UserNotification::with('user')->orderByDesc('created_at');
             
             // Add type filter
             if ($request->has('type')) {
@@ -78,7 +78,7 @@ class AdminNotificationController extends Controller
                 $users = User::where('is_active', true)->get();
                 
                 foreach ($users as $user) {
-                    $notifications[] = Notification::create([
+                    $notifications[] = UserNotification::create([
                         'user_id' => $user->id,
                         'title' => $request->title,
                         'message' => $request->message,
@@ -89,7 +89,7 @@ class AdminNotificationController extends Controller
                 $message = 'Notification sent to all users';
             } else {
                 // Send to specific user
-                $notification = Notification::create([
+                $notification = UserNotification::create([
                     'user_id' => $request->user_id,
                     'title' => $request->title,
                     'message' => $request->message,
@@ -115,7 +115,7 @@ class AdminNotificationController extends Controller
     public function markRead($id)
     {
         try {
-            $notification = Notification::findOrFail($id);
+            $notification = UserNotification::findOrFail($id);
             
             if ($notification->read_at) {
                 return response()->json([
@@ -144,7 +144,7 @@ class AdminNotificationController extends Controller
         try {
             $user = User::findOrFail($userId);
             
-            $updated = Notification::where('user_id', $userId)
+            $updated = UserNotification::where('user_id', $userId)
                 ->whereNull('read_at')
                 ->update([
                     'read_at' => now(),
@@ -165,7 +165,7 @@ class AdminNotificationController extends Controller
     public function destroy($id)
     {
         try {
-            $notification = Notification::findOrFail($id);
+            $notification = UserNotification::findOrFail($id);
             $notification->delete();
 
             return response()->json([
@@ -182,15 +182,15 @@ class AdminNotificationController extends Controller
     public function stats()
     {
         try {
-            $total = Notification::count();
-            $read = Notification::whereNotNull('read_at')->count();
+            $total = UserNotification::count();
+            $read = UserNotification::whereNotNull('read_at')->count();
             $unread = $total - $read;
             
-            $byType = Notification::select('notification_type', \DB::raw('COUNT(*) as count'))
+            $byType = UserNotification::select('notification_type', \DB::raw('COUNT(*) as count'))
                 ->groupBy('notification_type')
                 ->get();
                 
-            $recent = Notification::with('user')
+            $recent = UserNotification::with('user')
                 ->orderByDesc('created_at')
                 ->limit(10)
                 ->get();

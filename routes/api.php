@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\FoodDiaryController;
 use App\Http\Controllers\Api\QuickFoodEntryController;
 use App\Http\Controllers\Api\WaterEntryController;
 use App\Http\Controllers\ReportsController as UserReportsController;
+use App\Http\Controllers\Api\UserNotificationController;
+use App\Http\Controllers\Api\UserSessionController;
 
 // Admin UserController
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -99,6 +101,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/water', [WaterEntryController::class, 'index']);
     Route::post('/water', [WaterEntryController::class, 'store']);
     Route::delete('/water/{id}', [WaterEntryController::class, 'destroy']);
+
+    Route::get('/notifications', [UserNotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [UserNotificationController::class, 'unreadCount']);
+    Route::put('/notifications/{id}/read', [UserNotificationController::class, 'markAsRead']);
+    Route::put('/notifications/read-all', [UserNotificationController::class, 'markAllAsRead']);
+
+    Route::get('/sessions', [UserSessionController::class, 'index']);
+    Route::delete('/sessions/{sessionId}', [UserSessionController::class, 'destroy']);
 
         // Daily Report
     Route::get('/report/daily', [UserReportsController::class, 'dailyReport'])
@@ -185,25 +195,21 @@ Route::middleware(['auth:sanctum','admin'])->prefix('admin')->group(function() {
     Route::get('/reports/overview', [AdminReportController::class, 'overview']);
 
     // Settings
-    Route::get('/settings', [AdminSettingsController::class, 'index']);
-    Route::get('/settings/{key}', [AdminSettingsController::class, 'show']);
-    Route::post('/settings', [AdminSettingsController::class, 'store']);
-    Route::put('/settings/{key}', [AdminSettingsController::class, 'update']);
-    Route::delete('/settings/{key}', [AdminSettingsController::class, 'destroy']);
-    Route::get('/settings/group/{group}', [AdminSettingsController::class, 'byGroup']);
-    Route::get('/settings/groups', [AdminSettingsController::class, 'groups']);
-
+    // Route::get('/settings', [AdminSettingsController::class, 'index']);
+    // Route::get('/settings/{key}', [AdminSettingsController::class, 'show']);
+    // Route::post('/settings', [AdminSettingsController::class, 'store']);
+    // Route::put('/settings/{key}', [AdminSettingsController::class, 'update']);
+    // Route::delete('/settings/{key}', [AdminSettingsController::class, 'destroy']);
+    // Route::get('/settings/group/{group}', [AdminSettingsController::class, 'byGroup']);
+    // Route::get('/settings/groups', [AdminSettingsController::class, 'groups']);
 
     // Notifications
     Route::get('/notifications', [AdminNotificationController::class, 'index']);
     Route::post('/notifications', [AdminNotificationController::class, 'store']);
-    Route::put('/notifications/{id}/read', [AdminNotificationController::class, 'markRead']);
-    Route::put('/notifications/{userId}/read-all', [AdminNotificationController::class, 'markAllRead']);
+    // Route::put('/notifications/{id}/read', [AdminNotificationController::class, 'markRead']);
+    // Route::put('/notifications/{userId}/read-all', [AdminNotificationController::class, 'markAllRead']);
     Route::delete('/notifications/{id}', [AdminNotificationController::class, 'destroy']);
     Route::get('/notifications/stats', [AdminNotificationController::class, 'stats']);
-
-
-
 
     Route::fallback(function () {
         return response()->json([

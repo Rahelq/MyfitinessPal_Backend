@@ -78,7 +78,8 @@ FitnessPal API is a backend system that powers a fitness tracking application wi
 
 6. **Seed database (optional)**
    ```bash
-   php artisan db:seed
+   php artisan db:seed --class=ExerciseMasterSeeder
+   php artisan db:seed --class=DatabaseSeeder
    ```
 
 7. **Install Laravel Sanctum**

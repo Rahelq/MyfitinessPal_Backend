@@ -60,4 +60,22 @@ class User extends Authenticatable
         return $this->hasMany(QuickExerciseEntries::class);
 
     }
+
+    public function userSessions()
+    {
+        return $this->hasMany(UserSession::class);
+    }
+
+    public function createSessionRecord($tokenId, $tokenName = 'auth')
+    {
+        // This assumes you have a 'user_sessions' relationship defined
+        return $this->userSessions()->create([
+            'session_id' => $tokenId, // This is the ID of the token in the 'personal_access_tokens' table
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'created_at' => now(),
+            'expires_at' => now()->addWeeks(2), // Match Sanctum's expiration if you set one
+            'is_active' => true,
+        ]);
+    }
 }

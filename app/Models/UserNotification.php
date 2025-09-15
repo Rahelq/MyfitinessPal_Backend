@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Notification extends Model
+class UserNotification  extends Model
 {
     use HasFactory;
 
@@ -14,7 +14,8 @@ class Notification extends Model
         'user_id',
         'title',
         'message',
-        'read_at'
+        'read_at',
+        "is_read"
     ];
 
     protected $casts = [
