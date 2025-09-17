@@ -11,6 +11,7 @@ class CalorieService
      * activity_level: sedentary|lightly_active|active|very_active
      * weekly_change_kg: positive to gain, negative to lose
      */
+    
     public function dailyCalories(
         string $sex,
         float $height_cm,

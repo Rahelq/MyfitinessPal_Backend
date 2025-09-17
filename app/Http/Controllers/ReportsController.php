@@ -18,6 +18,7 @@ use DB;
 
 class ReportsController extends Controller
 {
+    
     /**
      * Daily report for a specific date
      */
